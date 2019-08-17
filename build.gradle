@@ -4,6 +4,7 @@ version '1.0.0'
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
 
 
 sourceCompatibility = 1.8
@@ -15,6 +16,10 @@ clean {
 buildscript {
     repositories {
         mavenLocal()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.+'
     }
 }
 
@@ -31,7 +36,6 @@ repositories {
 
     maven   {     url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'  }
     maven   {     url = 'http://maven.elmakers.com/repository/'                            }
-    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
 configurations {
@@ -52,18 +56,25 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
+            artifact sourcesJar
+            artifact javadocJar
+
+            groupId project.group
+            artifactId project.artifactId
+            version project.version
         }
     }
 }
 
-if (project.hasProperty("deployRepoUrl")) {
-    uploadArchives {
-        repositories.mavenDeployer {
-            configuration = configurations.deployerJars
-            repository(url: deployRepoUrl) {
-                authentication(userName: deployRepoUsername, password: deployRepoPassword)
-            }
-        }
+bintray {
+    user = project.bintrayUser
+    key = project.bintrayApiKey
+    publications = ['mavenJava']
+    pkg {
+        repo = 'maven'
+        name = 'CrateReloadedAPI'
+        vcsUrl = 'https://github.com/Hazebyte/CrateReloadedAPI.git'
+        licenses = ['MIT']
     }
 }
 
